@@ -1,0 +1,28 @@
+{
+	"name": "balid",
+	"version": "0.1",
+	"description": "A simple schema validator.",
+	"type": "module",
+	"author": "Bxnq",
+	"license": "MIT",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"test": "jest --watchAll"
+	},
+	"keywords": [
+		"schema validator",
+		"validator",
+		"balid"
+	],
+	"devDependencies": {
+		"@types/jest": "^29.5.11",
+		"jest": "^29.7.0",
+		"ts-jest": "^29.1.1",
+		"typescript": "^5.3.3"
+	}
+}

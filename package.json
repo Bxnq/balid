@@ -5,14 +5,20 @@
 	"type": "module",
 	"author": "Bxnq",
 	"license": "MIT",
+	"source": "src/index.ts",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Bxnq/balid.git"
+	},
 	"files": [
 		"dist"
 	],
 	"scripts": {
 		"build": "tsc",
-		"test": "jest --watchAll"
+		"test": "jest",
+		"dev": "jest --watchAll --no-cache"
 	},
 	"keywords": [
 		"schema validator",

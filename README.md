@@ -15,8 +15,13 @@ Balid is a light weight schema validator.
     -   [x] Objects
     -   [ ] Arrays
 -   [ ] **Utility Functions (e.g: max, min)**
+
     -   [ ] min
     -   [ ] max
+
+-   [ ] Github Actions
+    -   [ ] publish version when `main` branch changes
+    -   [ ] automated tests
 
 ## Installation
 

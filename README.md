@@ -14,10 +14,10 @@ Balid is a light weight schema validator.
 -   [ ] **Advanced Types**
     -   [x] Objects
     -   [ ] Arrays
--   [ ] **Utility Functions (e.g: max, min)**
+-   [x] **Utility Functions (e.g: max, min)**
 
-    -   [ ] min
-    -   [ ] max
+    -   [x] min
+    -   [x] max
 
 -   [ ] Github Actions
     -   [ ] publish version when `main` branch changes
@@ -44,6 +44,9 @@ yarn install balid
 -   [String](#string)
 -   [Number](#number)
 -   [Object](#object)
+-   [And](#and)
+-   [Or](#or)
+-   [Optional](#optional)
 
 ### Any
 
@@ -52,8 +55,8 @@ import { b } from "balid";
 
 const schema = b.any();
 
-schema.validate(200); // returns true
-schema.validate({ foo: "bar" }); // returns true
+schema.validate(200); // returns { valid: true }
+schema.validate({ foo: "bar" }); // returns { valid: true }
 ```
 
 ### Boolean:
@@ -63,8 +66,8 @@ import { b } from "balid";
 
 const schema = b.boolean();
 
-schema.validate(false); // returns true
-schema.validate("false"); // returns false
+schema.validate(false); // returns { valid: true }
+schema.validate("false"); // returns { valid: false }
 ```
 
 ### String:
@@ -74,7 +77,17 @@ import { b } from "balid";
 
 const schema = b.string();
 
-schema.validate("Hello World"); // returns true
+schema.validate("Hello World"); // returns { valid: true }
+
+const minMaxSchema = b.string({ min: 2, max: 10 });
+
+schema.validate("a"); // returns { valid: false }
+schema.validate("hello"); // returns { valid: true }
+
+const matchSchema = b.string({ match: /hello/ });
+
+matchSchema.validate("hello"); // returns { valid: true }
+matchSchema.validate("world"); // returns { valid: false }
 ```
 
 ### Number:
@@ -84,8 +97,14 @@ import { b } from "balid";
 
 const schema = b.number();
 
-schema.validate(123); // returns true
-schema.validate("123"); // returns false
+schema.validate(123); // returns { valid: true }
+schema.validate("123"); // returns { valid: false }
+
+const minMaxSchema = b.number({ min: 10, max: 20 });
+
+schema.validate(1); // returns { valid: false }
+schema.validate(25); // returns { valid: false }
+schema.validate(15); // returns { valid: true }
 ```
 
 ### Object:
@@ -97,5 +116,37 @@ const schema = b.object({
 	name: b.string(),
 });
 
-schema.validate({ name: "John Doe" }); // returns true
+schema.validate({ name: "John Doe" }); // returns { valid: true }
+```
+
+### And
+
+```typescript
+import { b } from "balid";
+
+const schema = b.and(b.any(), b.boolean());
+
+schema.validate(true); // returns { valid: true }
+```
+
+### Or
+
+```typescript
+import { b } from "balid";
+
+const schema = b.or(b.string(), b.boolean());
+
+schema.validate("hello world"); // returns { valid: true }
+schema.validate(true); // returns { valid: true }
+```
+
+### Optional
+
+```typescript
+import { b } from "balid";
+
+const schema = b.optional(b.string());
+
+schema.validate("hello world"); // returns { valid: true }
+schema.validate(); // returns { valid: true }
 ```

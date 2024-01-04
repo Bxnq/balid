@@ -2,6 +2,8 @@ export type SchemaType = {
 	validate: (input: any) => Valid;
 };
 
+export type TypeParams = ((schema?: SchemaType) => SchemaType) | ((...schemas: SchemaType[]) => SchemaType);
+
 export type Valid = {
 	valid: boolean;
 	errors: string[];
@@ -22,7 +24,7 @@ const check = (valid: Valid, check: boolean) => {
 	return;
 };
 
-export const b: Record<string, (schema?) => SchemaType> = {
+export const types = {
 	any: () => {
 		return {
 			validate(input) {
@@ -41,29 +43,56 @@ export const b: Record<string, (schema?) => SchemaType> = {
 			},
 		};
 	},
-	number: () => {
+	number: (options?: { min?: number; max?: number }) => {
+		let min = options?.min ?? undefined;
+		let max = options?.max ?? undefined;
+
 		return {
 			validate(input: any) {
 				const valid = handle();
 
 				check(valid, typeof input === "number");
 
+				if (min != undefined) {
+					check(valid, input >= min);
+				}
+
+				if (max != undefined) {
+					check(valid, input <= max);
+				}
+
 				return valid;
 			},
 		};
 	},
-	string: () => {
+	string: (options?: { min?: number; max?: number; match?: RegExp }) => {
+		let min = options?.min ?? undefined;
+		let max = options?.max ?? undefined;
+		let match = options?.match ?? undefined;
+
 		return {
 			validate(input: any) {
 				const valid = handle();
 
 				check(valid, typeof input === "string");
 
+				if (min != undefined) {
+					check(valid, String(input).length >= min);
+				}
+
+				if (max != undefined) {
+					check(valid, String(input).length <= max);
+				}
+
+				if (match != undefined) {
+					check(valid, match.test(input));
+				}
+
 				return valid;
 			},
 		};
 	},
-	object: (schema?: Record<string, SchemaType>) => {
+	object: (schema?: object) => {
 		return {
 			validate(input: any) {
 				let valid = handle();
@@ -74,6 +103,56 @@ export const b: Record<string, (schema?) => SchemaType> = {
 
 				for (const key of entries) {
 					check(valid, schema[key].validate(input[key]).valid);
+				}
+
+				return valid;
+			},
+		};
+	},
+};
+
+export const util = {
+	optional: (schema?: SchemaType) => {
+		return {
+			validate(input?: any) {
+				let valid = handle();
+
+				check(valid, input == undefined || schema.validate(input).valid);
+
+				return valid;
+			},
+		};
+	},
+	or: (...schemas: SchemaType[]) => {
+		return {
+			validate(input) {
+				let valid = handle();
+
+				for (const schema of schemas) {
+					if (schema.validate(input).valid) {
+						return {
+							valid: true,
+							errors: [],
+						};
+					}
+				}
+
+				return { valid: false, errors: [] };
+			},
+		};
+	},
+	and: (...schemas: SchemaType[]) => {
+		return {
+			validate(input) {
+				let valid = handle();
+
+				for (const schema of schemas) {
+					if (!schema.validate(input).valid) {
+						return {
+							valid: false,
+							errors: [],
+						};
+					}
 				}
 
 				return valid;

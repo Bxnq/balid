@@ -109,6 +109,25 @@ export const types = {
 			},
 		};
 	},
+	array: (schema?: SchemaType) => {
+		return {
+			validate(input: any) {
+				let valid = handle();
+
+				check(valid, Array.isArray(input));
+
+				if (!valid.valid) {
+					return valid;
+				}
+
+				for (const value of input) {
+					check(valid, schema.validate(value).valid);
+				}
+
+				return valid;
+			},
+		};
+	},
 };
 
 export const util = {

@@ -83,6 +83,19 @@ describe("advanced", () => {
 		expect(schema.validate({ age: 2 }).valid).toBe(false);
 		expect(schema.validate({ name: 2, age: "hello world" }).valid).toBe(false);
 	});
+	test("array", () => {
+		const schema = b.array(b.string());
+
+		expect(schema.validate(2).valid).toBe(false);
+		expect(schema.validate(true).valid).toBe(false);
+		expect(schema.validate("hello world").valid).toBe(false);
+
+		expect(schema.validate([2]).valid).toBe(false);
+		expect(schema.validate(["test", 2]).valid).toBe(false);
+		expect(schema.validate([2, "hello world"]).valid).toBe(false);
+		expect(schema.validate(["test", "2"]).valid).toBe(true);
+		expect(schema.validate(["hello world"]).valid).toBe(true);
+	});
 });
 
 describe("util", () => {

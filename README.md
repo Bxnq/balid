@@ -14,7 +14,7 @@ Balid is a light weight schema validator.
 -   [x] **Advanced Types**
     -   [x] Objects
     -   [x] Arrays
--   [ ] ** Advanced Errors **
+-   [ ] **Advanced Errors**
     -   [ ] Error Messages
     -   [ ] Custom Error Messages
 -   [x] **Utility Functions (e.g: max, min)**

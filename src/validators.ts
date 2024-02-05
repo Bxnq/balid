@@ -1,14 +1,3 @@
-export type SchemaType = {
-	validate: (input: any) => Valid;
-};
-
-export type TypeParams = ((schema?: SchemaType) => SchemaType) | ((...schemas: SchemaType[]) => SchemaType);
-
-export type Valid = {
-	valid: boolean;
-	errors: string[];
-};
-
 const handle: () => Valid = () => {
 	return {
 		valid: true,

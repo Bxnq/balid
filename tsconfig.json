@@ -6,8 +6,7 @@
 		"esModuleInterop": true,
 		"declaration": true,
 		"outDir": "./dist",
-		"baseUrl": "./src",
-		"types": ["./src/types.d.ts"]
+		"baseUrl": "./src"
 	},
 	"include": ["src/**/*"]
 }

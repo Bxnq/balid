@@ -14,9 +14,9 @@ Balid is a light weight schema validator.
 -   [x] **Advanced Types**
     -   [x] Objects
     -   [x] Arrays
--   [ ] **Advanced Errors**
-    -   [ ] Error Messages
-    -   [ ] Custom Error Messages
+-   [x] **Advanced Errors**
+    -   [x] Error Messages
+    -   [x] Custom Error Messages
 -   [x] **Utility Functions (e.g: max, min)**
 
     -   [x] min
@@ -138,7 +138,7 @@ schema.validate(["John Doe"]); // returns { valid: true }
 ```typescript
 import { b } from "balid";
 
-const schema = b.and(b.any(), b.boolean());
+const schema = b.and({/* OPTIONS */}, b.any(), b.boolean());
 
 schema.validate(true); // returns { valid: true }
 ```
@@ -148,7 +148,7 @@ schema.validate(true); // returns { valid: true }
 ```typescript
 import { b } from "balid";
 
-const schema = b.or(b.string(), b.boolean());
+const schema = b.or({/* OPTIONS */}, b.string(), b.boolean());
 
 schema.validate("hello world"); // returns { valid: true }
 schema.validate(true); // returns { valid: true }

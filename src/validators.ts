@@ -1,181 +1,196 @@
+import { AndOptions, ArrayOptions, DefaultOptions, NumberOptions, ObjectOptions, OptionalOptions, OrOptions, StringOptions } from "types";
+
 export type SchemaType = {
-	validate: (input: any) => Valid;
+    validate: (input: any) => Valid;
 };
 
 export type TypeParams = ((schema?: SchemaType) => SchemaType) | ((...schemas: SchemaType[]) => SchemaType);
 
 export type Valid = {
-	valid: boolean;
-	errors: string[];
+    valid: boolean;
+    errors: string[];
 };
 
 const handle: () => Valid = () => {
-	return {
-		valid: true,
-		errors: [],
-	};
+    return {
+        valid: true,
+        errors: [],
+    };
 };
 
-const check = (valid: Valid, check: boolean) => {
-	if (!check) {
-		valid.valid = false;
-	}
+const check = (valid: Valid, check: boolean, errorMessage?: string) => {
+    if (!check) {
+        valid.valid = false;
 
-	return;
+        errorMessage && valid.errors.push(errorMessage);
+    }
+
+    return;
 };
 
 export const types = {
-	any: () => {
-		return {
-			validate(input) {
-				return { valid: true, errors: [] };
-			},
-		};
-	},
-	boolean: () => {
-		return {
-			validate(input: any) {
-				const valid = handle();
+    any: () => {
+        return {
+            validate(input) {
+                return { valid: true, errors: [] };
+            },
+        };
+    },
+    boolean: (options?: DefaultOptions) => {
+        return {
+            validate(input: any) {
+                const valid = handle();
 
-				check(valid, typeof input === "boolean");
+                check(valid, typeof input === "boolean", options?.notExpectedType ?? "Not a boolean");
 
-				return valid;
-			},
-		};
-	},
-	number: (options?: { min?: number; max?: number }) => {
-		let min = options?.min ?? undefined;
-		let max = options?.max ?? undefined;
+                return valid;
+            },
+        };
+    },
+    number: (options?: NumberOptions) => {
+        let min = options?.min ?? undefined;
+        let max = options?.max ?? undefined;
 
-		return {
-			validate(input: any) {
-				const valid = handle();
+        return {
+            validate(input: any) {
+                const valid = handle();
 
-				check(valid, typeof input === "number");
+                check(valid, typeof input === "number", options?.notExpectedType ?? "Not a number");
 
-				if (min != undefined) {
-					check(valid, input >= min);
-				}
+                if (min != undefined) {
+                    check(valid, input >= min, options?.gratherThanExpected ?? "Number is less than expected");
+                }
 
-				if (max != undefined) {
-					check(valid, input <= max);
-				}
+                if (max != undefined) {
+                    check(valid, input <= max, options?.lessThanExpected ?? "Number is grather than expected");
+                }
 
-				return valid;
-			},
-		};
-	},
-	string: (options?: { min?: number; max?: number; match?: RegExp }) => {
-		let min = options?.min ?? undefined;
-		let max = options?.max ?? undefined;
-		let match = options?.match ?? undefined;
+                return valid;
+            },
+        };
+    },
+    string: (options?: StringOptions) => {
+        let min = options?.min ?? undefined;
+        let max = options?.max ?? undefined;
+        let match = options?.match ?? undefined;
 
-		return {
-			validate(input: any) {
-				const valid = handle();
+        return {
+            validate(input: any) {
+                const valid = handle();
 
-				check(valid, typeof input === "string");
+                check(valid, typeof input === "string", options?.notExpectedType ?? "Not a string");
 
-				if (min != undefined) {
-					check(valid, String(input).length >= min);
-				}
+                if (min != undefined) {
+                    check(valid, String(input).length >= min, options?.lessThanExpected ?? "String is less than expected");
+                }
 
-				if (max != undefined) {
-					check(valid, String(input).length <= max);
-				}
+                if (max != undefined) {
+                    check(valid, String(input).length <= max, options?.gratherThanExpected ?? "String is grather than expected");
+                }
 
-				if (match != undefined) {
-					check(valid, match.test(input));
-				}
+                if (match != undefined) {
+                    check(valid, match.test(input), options?.notMatchPattern ?? "String does not match pattern");
+                }
 
-				return valid;
-			},
-		};
-	},
-	object: (schema?: object) => {
-		return {
-			validate(input: any) {
-				let valid = handle();
+                return valid;
+            },
+        };
+    },
+    object: (schema?: object, options?: ObjectOptions) => {
+        return {
+            validate(input: any) {
+                let valid = handle();
 
-				check(valid, typeof input === "object");
+                check(valid, typeof input === "object", options?.notExpectedType ?? "Not an object");
 
-				const entries = schema ? Object.keys(schema) : [];
+                const entries = schema ? Object.keys(schema) : [];
 
-				for (const key of entries) {
-					check(valid, schema[key].validate(input[key]).valid);
-				}
+                for (const key of entries) {
+                    const validateKey: Valid = schema[key].validate(input[key]);
 
-				return valid;
-			},
-		};
-	},
-	array: (schema?: SchemaType) => {
-		return {
-			validate(input: any) {
-				let valid = handle();
+                    check(valid, validateKey.valid);
 
-				check(valid, Array.isArray(input));
+                    valid.errors.push(...validateKey.errors.map((error) => key + ": " + error));
+                }
 
-				if (!valid.valid) {
-					return valid;
-				}
+                return valid;
+            },
+        };
+    },
+    array: (schema?: SchemaType, options?: ArrayOptions) => {
+        return {
+            validate(input: any) {
+                let valid = handle();
 
-				for (const value of input) {
-					check(valid, schema.validate(value).valid);
-				}
+                check(valid, Array.isArray(input), options?.notExpectedType ?? "Not an array");
 
-				return valid;
-			},
-		};
-	},
+                if (!valid.valid) {
+                    return valid;
+                }
+
+                for (let i = 0; i < input.length; i++) {
+                    const value = input[i];
+                    
+                    const validateValue = schema.validate(value);
+                    
+                    check(valid, validateValue.valid);
+                
+                    valid.errors.push(...validateValue.errors.map((error) => i + ": " + error));
+                }
+
+                return valid;
+            },
+        };
+    },
 };
 
 export const util = {
-	optional: (schema?: SchemaType) => {
-		return {
-			validate(input?: any) {
-				let valid = handle();
+    optional: (schema?: SchemaType, options?: OptionalOptions) => {
+        return {
+            validate(input?: any) {
+                let valid = handle();
 
-				check(valid, input == undefined || schema.validate(input).valid);
+                check(valid, input == undefined || schema.validate(input).valid, options?.notMatchSchema ?? "Optional does not match schema");
 
-				return valid;
-			},
-		};
-	},
-	or: (...schemas: SchemaType[]) => {
-		return {
-			validate(input) {
-				let valid = handle();
+                return valid;
+            },
+        };
+    },
+    or: (options: OrOptions, ...schemas: SchemaType[]) => {
+        return {
+            validate(input) {
+                let valid = handle();
 
-				for (const schema of schemas) {
-					if (schema.validate(input).valid) {
-						return {
-							valid: true,
-							errors: [],
-						};
-					}
-				}
+                for (const schema of schemas) {
+                    const validate = schema.validate(input);
 
-				return { valid: false, errors: [] };
-			},
-		};
-	},
-	and: (...schemas: SchemaType[]) => {
-		return {
-			validate(input) {
-				let valid = handle();
+                    if (validate.valid) {
+                        valid.valid = true;
+            
+                        return valid;
+                    }
+                }
 
-				for (const schema of schemas) {
-					if (!schema.validate(input).valid) {
-						return {
-							valid: false,
-							errors: [],
-						};
-					}
-				}
+                return { valid: false, errors: [options.notMatchSchema ?? "Or does not match schema"] };
+            },
+        };
+    },
+    and: (options: AndOptions, ...schemas: SchemaType[]) => {
+        return {
+            validate(input) {
+                let valid = handle();
 
-				return valid;
-			},
-		};
-	},
+                for (const schema of schemas) {
+                    if (!schema.validate(input).valid) {
+                        return {
+                            valid: false,
+                            errors: [options.notMatchSchema ?? "And does not match schema"],
+                        };
+                    }
+                }
+
+                return valid;
+            },
+        };
+    },
 };

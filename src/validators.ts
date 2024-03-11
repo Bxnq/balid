@@ -1,15 +1,4 @@
-import { AndOptions, ArrayOptions, DefaultOptions, NumberOptions, ObjectOptions, OptionalOptions, OrOptions, StringOptions } from "types";
-
-export type SchemaType = {
-    validate: (input: any) => Valid;
-};
-
-export type TypeParams = ((schema?: SchemaType) => SchemaType) | ((...schemas: SchemaType[]) => SchemaType);
-
-export type Valid = {
-    valid: boolean;
-    errors: string[];
-};
+import { AndOptions, ArrayOptions, DefaultOptions, NumberOptions, ObjectOptions, OptionalOptions, OrOptions, Schema, StringOptions, Valid } from "types.js";
 
 const handle: () => Valid = () => {
     return {
@@ -117,7 +106,7 @@ export const types = {
             },
         };
     },
-    array: (schema?: SchemaType, options?: ArrayOptions) => {
+    array: (schema?: Schema, options?: ArrayOptions) => {
         return {
             validate(input: any) {
                 let valid = handle();
@@ -145,7 +134,7 @@ export const types = {
 };
 
 export const util = {
-    optional: (schema?: SchemaType, options?: OptionalOptions) => {
+    optional: (schema?: Schema, options?: OptionalOptions) => {
         return {
             validate(input?: any) {
                 let valid = handle();
@@ -156,7 +145,7 @@ export const util = {
             },
         };
     },
-    or: (options: OrOptions, ...schemas: SchemaType[]) => {
+    or: (options: OrOptions, ...schemas: Schema[]) => {
         return {
             validate(input) {
                 let valid = handle();
@@ -175,7 +164,7 @@ export const util = {
             },
         };
     },
-    and: (options: AndOptions, ...schemas: SchemaType[]) => {
+    and: (options: AndOptions, ...schemas: Schema[]) => {
         return {
             validate(input) {
                 let valid = handle();
